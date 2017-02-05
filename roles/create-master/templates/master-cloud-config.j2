@@ -1,0 +1,79 @@
+#cloud-config
+---
+write-files:
+  - path: /home/core/install-python
+    permissions: 0755
+    content: |
+      #!/bin/bash
+      VERSIONS=${VERSIONS:-"2.7.8.10"}
+      mkdir -p /opt/bin && cd /opt
+      wget http://downloads.activestate.com/ActivePython/releases/${VERSIONS}/ActivePython-${VERSIONS}-linux-x86_64.tar.gz -O - | tar -xz
+      cd ActivePython-${VERSIONS}-linux-x86_64 && ./install.sh -I /opt/python/ && rm -rf ActivePython-${VERSIONS}-linux-x86_64
+      ln -s /opt/python/bin/easy_install /opt/bin/easy_install
+      ln -s /opt/python/bin/pip /opt/bin/pip
+      ln -s /opt/python/bin/python /opt/bin/python
+      ln -s /opt/python/bin/virtualenv /opt/bin/virtualenv
+hostname: "{{ cluster_prefix }}-{{ cluster_name }}-master-{{ item }}"
+coreos:
+    flannel:
+        etcd_endpoints: https://127.0.0.1:2379
+        etcd_cafile: /etc/ssl/infra-etcd/ca.pem
+        etcd_certfile: /etc/ssl/infra-etcd/etcd-client.pem
+        etcd_keyfile: /etc/ssl/infra-etcd/etcd-client-key.pem
+
+    update:
+        reboot-strategy: etcd-lock
+
+    locksmith:
+        endpoint: https://127.0.0.1:2379
+        etcd_cafile: /etc/ssl/infra-etcd/ca.pem
+        etcd_certfile: /etc/ssl/infra-etcd/etcd-client.pem
+        etcd_keyfile: /etc/ssl/infra-etcd/etcd-client-key.pem
+        window-start: 04:00
+        window-length: 1h
+
+    etcd2:
+        name: "{{ cluster_prefix }}-{{ cluster_name }}-master-{{ item }}"
+        discovery: "{{ cluster_etcd2_token.content }}"
+        initial-advertise-peer-urls: https://$public_ipv4:2380
+        advertise-client-urls: https://$public_ipv4:2379
+        listen-client-urls: https://127.0.0.1:2379,https://$public_ipv4:2379
+        listen-peer-urls: https://$public_ipv4:2380
+        cert_file: /etc/ssl/infra-etcd/etcd.pem
+        key_file: /etc/ssl/infra-etcd/etcd-key.pem
+        trusted_ca_file: /etc/ssl/infra-etcd/ca.pem
+        client_cert_auth: true
+        peer_cert_file: /etc/ssl/infra-etcd/etcd.pem
+        peer_key_file: /etc/ssl/infra-etcd/etcd-key.pem
+        peer_trusted_ca_file: /etc/ssl/infra-etcd/ca.pem
+        peer_client_cert_auth: true
+
+    units:
+        - name: etcd2.service
+          command: start
+        - name: flanneld.service
+          command: start
+          drop-ins:
+              - name: 50-network-config.conf
+                content: |
+                    [Unit]
+                    Requires=etcd2.service
+                    [Service]
+                    Environment="ETCD_SSL_DIR=/etc/ssl/infra-etcd"
+                    ExecStartPre=/usr/bin/etcdctl --endpoints=https://127.0.0.1:2379 --ca-file=/etc/ssl/infra-etcd/ca.pem --cert-file=/etc/ssl/infra-etcd/etcd-client.pem --key-file=/etc/ssl/infra-etcd/etcd-client-key.pem set /coreos.com/network/config '{"Network":"10.244.0.0/16", "Backend": {"Type": "vxlan"}}'
+        - name: docker.service
+          command: start
+          drop-ins:
+              - name: 40-flannel.conf
+                content: |
+                    [Unit]
+                    Requires=flanneld.service
+                    After=flanneld.service
+        - name: runcmd.service
+          command: start
+          content: |
+              [Unit]
+              Description=Install Additional Software
+              [Service]
+              Type=oneshot
+              ExecStart=/bin/sh -c "/home/core/install-python"

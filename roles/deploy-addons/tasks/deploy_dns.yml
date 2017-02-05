@@ -1,0 +1,16 @@
+# Create a tempfile
+- name: Create a tempfile for the manifest creation
+  shell: mktemp
+  register: tempfile
+  tags: addon-dns
+
+# DNS
+- name: Create the manifest for the kube_dns
+  template:
+    src: templates/kube_dns.j2
+    dest: "{{ tempfile.stdout }}"
+  tags: addon-dns
+
+- name: Kubectl apply kube-dns
+  shell: kubectl apply -f "{{ tempfile.stdout }}"
+  tags: addon-dns

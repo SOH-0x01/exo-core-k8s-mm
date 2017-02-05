@@ -1,0 +1,173 @@
+#### Master Security Groups rules ####
+
+  - name: Create cluster SSH for remote access
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 22
+      end_port: 22
+      cidr: "{{ cluster_ssh_cidr }}"
+    tags: sgr
+
+# Master Core and k8s rules
+  - name: public to master https (kubernetes api)
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 443
+      end_port: 443
+    tags: sgr
+
+  - name: master to master etcd2 client ports
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 2379
+      end_port: 2379
+    tags: sgr
+
+  - name: worker to master etcd2 client ports
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 2379
+      end_port: 2379
+    tags: sgr
+
+  - name: master to master etcd2 peer ports
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 2380
+      end_port: 2380
+    tags: sgr
+
+  - name: master to master etcd2 client ports
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 12379
+      end_port: 12379
+    tags: sgr
+
+  - name: master to master etcd2 peer ports
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 12380
+      end_port: 12380
+    tags: sgr
+
+  - name: master apiserver to master kubelet
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 10250
+      end_port: 10250
+      protocol: tcp
+    tags: sgr
+
+
+#### Worker Security Groups rules #####
+
+  - name: Create cluster SSH for remote access
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name}}-worker"
+      start_port: 22
+      end_port: 22
+      cidr: "{{ cluster_ssh_cidr }}"
+    tags: sgr
+
+# Worker Core and k8s rules
+  - name: public to worker http
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 80
+      end_port: 80
+    tags: sgr
+
+  - name: public to worker https
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 443
+      end_port: 443
+    tags: sgr
+
+  - name: master apiserver to worker kubelet
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-worker"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 10250
+      end_port: 10250
+      protocol: tcp
+    tags: sgr
+
+  - name: heapster to master kubelet
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 10255
+      end_port: 10255
+      protocol: tcp
+    tags: sgr
+
+  - name: heapster to worker kubelet
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-worker"
+      user_security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 10255
+      end_port: 10255
+      protocol: tcp
+    tags: sgr
+
+  - name: vxlan master to master
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 8472
+      end_port: 8472
+      protocol: udp
+    tags: sgr
+
+  - name: vxlan worker to master
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-master"
+      user_security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 8472
+      end_port: 8472
+      protocol: udp
+    tags: sgr
+
+  - name: vxlan worker to worker
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-worker"
+      user_security_group: "{{ cluster_security_group_name }}-worker"
+      start_port: 8472
+      end_port: 8472
+      protocol: udp
+    tags: sgr
+
+  - name: vxlan master to worker
+    local_action:
+      module: cs_securitygroup_rule
+      security_group: "{{ cluster_security_group_name }}-worker"
+      user_security_group: "{{ cluster_security_group_name }}-master"
+      start_port: 8472
+      end_port: 8472
+      protocol: udp
+    tags: sgr

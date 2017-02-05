@@ -1,0 +1,31 @@
+
+# Generate a password
+- set_fact:
+    reg_secret: "{{ (cluster_name + EXO_API_KEY) | md5 | reverse | truncate(7, True, '') }}"
+
+# Create a tempfile
+- name: Create a tempfile for the manifest creation
+  shell: mktemp
+  register: tempfile
+  tags: addon-reg
+
+# Registry
+- name: Create the Storage bucket for the registry
+  s3_bucket:
+    access_key: "{{ EXO_API_KEY }}"
+    secret_key: "{{ EXO_API_SECRET }}"
+    name: "{{ reg_bucket_name }}"
+    s3_url: "https://{{ exo_sos_endpoint }}"
+    region: "{{ exo_zone }}"
+    ceph: true
+  tags: addon-reg
+
+- name: Create registry manifest
+  template:
+    src: templates/registry.j2
+    dest: "{{ tempfile.stdout }}"
+  tags: addon-reg
+
+- name: Kubectl apply nginx-ingress
+  shell: kubectl apply -f "{{ tempfile.stdout }}"
+  tags: addon-reg

@@ -1,0 +1,15 @@
+  - name: Delete cluster masters
+    local_action:
+      module: cs_instance
+      name: "{{ cluster_prefix }}-{{ cluster_name }}-master-{{ item }}"
+      state: expunged
+    with_sequence: count=3
+    tags: vm
+
+  - name: Delete cluster workers
+    local_action:
+      module: cs_instance
+      name: "{{ cluster_prefix }}-{{ cluster_name }}-worker-{{ item }}"
+      state: expunged
+    with_sequence: count={{ nb_nodes }}
+    tags: vm

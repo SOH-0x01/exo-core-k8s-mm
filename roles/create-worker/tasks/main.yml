@@ -1,0 +1,2 @@
+---
+  - include: create_worker_vm.yml

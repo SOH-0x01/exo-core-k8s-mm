@@ -1,0 +1,83 @@
+---
+
+# Create the cloud security groups
+- hosts: localhost
+  connection: local
+  roles:
+    - create-security-group
+
+# Create the cloud master vms
+- hosts: localhost
+  connection: local
+  vars:
+    # Constants
+    exo_zone: CH-GVA-2
+    exo_template: Linux CoreOS stable 1122 64-bit 50G Disk (2016-09-06-dcb493)
+    exo_instance_type: Tiny
+    # Parameters
+    nb_nodes: 3
+  roles:
+    - create-master
+
+# Create the cloud worker vms
+- hosts: localhost
+  connection: local
+  vars:
+    # Constants
+    exo_zone: CH-GVA-2
+    exo_template: Linux CoreOS stable 1122 64-bit 50G Disk (2016-09-06-dcb493)
+    exo_instance_type: Small
+    # Parameters
+    nb_nodes: "{{ cluster_init_nb_nodes }}"
+  roles:
+    - create-worker
+
+# Generate ca and certificates
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - name: Ensure the local ssl directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0770
+      with_items:
+        - ./secret/ssl/infra
+        - ./secret/ssl/kubernetes
+  roles:
+    - create-certificate
+
+# Generate the inventory and kubectl context
+- hosts: localhost
+  connection: local
+  roles:
+    - create-context
+
+# Setup k8s components for master nodes
+- hosts: masters
+  vars:
+    k8s_version: "v1.5.1_coreos.0"
+    k8s_etcd_version: "2.2.1"
+    k8s_cluster_dns: "10.100.0.10"
+    k8s_service_cluster_ip_range: "10.100.0.0/16"
+  become: true
+  roles:
+    - setup-master
+
+# Setup k8s components for worker nodes
+- hosts: workers
+  vars:
+    # K8s config
+    k8s_version: "v1.5.1_coreos.0"
+    k8s_etcd_version: "2.2.1"
+    k8s_cluster_dns: "10.100.0.10"
+    # haproxy config
+    haproxy_version: 1.6
+    haproxy_timeout_connect: 10s
+    haproxy_timeout_client: 30s
+    haproxy_timeout_client_fin: 30s
+    haproxy_timeout_server: 30s
+    haproxy_timeout_tunnel: 3600s
+  become: true
+  roles:
+    - setup-worker

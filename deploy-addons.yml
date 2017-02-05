@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    # DNS - Internal DNS
+    k8s_cluster_dns: "10.100.0.10"
+    # Registry - Internal Registry
+    exo_zone: CH-GVA-2
+    exo_sos_endpoint: sos.exo.io
+    reg_token: "{{ (cluster_name + EXO_API_KEY) | md5 | reverse | truncate(7, True, '') }}"
+    reg_bucket_name: "{{ cluster_prefix }}-registry-{{ cluster_name }}-{{ reg_token }}"
+    # Nginx/Ingress - Internal Proxy
+    ngx_proxy_timeout: 90
+    # Heapster - Cluster monitoring
+    # NB: metric are derfined inside the template
+  roles:
+    - common
+    - deploy-addons

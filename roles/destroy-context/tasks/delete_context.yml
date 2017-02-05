@@ -1,0 +1,16 @@
+# Unset the Kubernetes context
+  - name: Unset cluster
+    command: kubectl config unset clusters.default-cluster
+    tags: ctx
+
+  - name: Unset context
+    command: kubectl config unset contexts.default-system
+    tags: ctx
+
+  - name: Unset user
+    command: kubectl config unset users.default-admin
+    tags: ctx
+
+  - name: Unset current context
+    command: kubectl config unset current-context
+    tags: ctx

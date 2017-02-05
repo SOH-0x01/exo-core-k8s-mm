@@ -1,0 +1,6 @@
+---
+# Delete the secret directory
+- name: Delete the local secret directory
+  file:
+    path: ./secret
+    state: absent

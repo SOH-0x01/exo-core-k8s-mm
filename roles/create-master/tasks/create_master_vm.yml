@@ -1,0 +1,35 @@
+
+  # Create an identity token
+  - uri:
+      url: "https://discovery.etcd.io/new?size=3"
+      return_content: yes
+    register: cluster_etcd2_token
+    tags: vm
+
+  # Create and register the masters
+  - name: Start cluster masters
+    local_action:
+      module: cs_instance
+      name: "{{ cluster_prefix }}-{{ cluster_name }}-master-{{ item }}"
+      zone: "{{ exo_zone }}"
+      template: "{{ exo_template }}"
+      service_offering: "{{ exo_instance_type }}"
+      ssh_key: "{{ cluster_ssh_key }}"
+      security_groups: [ '{{ cluster_security_group_name }}-master' ]
+      tags:
+        - { key: env, value: "{{ cluster_env }}" }
+        - { key: cluster_name, value: "{{ cluster_name }}" }
+        - { key: cluster_role, value: master }
+      user_data: "{{ lookup('template', '../templates/master-cloud-config.j2') }}"
+    register: master_nodes
+    with_sequence: count={{ nb_nodes }}
+    tags: vm
+
+  - add_host:
+      groups: masters
+      hostname: "{{ item.display_name }}"
+      ansible_host: "{{ item.default_ip }}"
+      ansible_user: core
+      ansible_python_interpreter: /opt/bin/python
+    with_items: "{{ master_nodes.results }}"
+    tags: vm

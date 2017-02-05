@@ -1,0 +1,3 @@
+---
+  - include: setup_worker_certificates.yml
+  - include: setup_worker_components.yml

@@ -1,0 +1,3 @@
+---
+  - include: generate_certified_authorities.yml
+  - include: generate_certificates.yml

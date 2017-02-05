@@ -1,0 +1,24 @@
+# Generates two certificate authorities for
+# - the coreos infrastructure
+# - the kubernetes services
+- name: Create infra certificate authorities
+  shell: echo '{{ lookup('template', '../templates/ca_csr.j2', convert_data=False) }}' | cfssl gencert -initca - | cfssljson -bare "{{ item }}" -
+  args:
+    chdir: ./secret/ssl
+    creates: "{{ item }}.pem"
+  with_items:
+    - infra/etcd-ca
+
+- name: Create kubernetes certificate authorities
+  shell: echo '{{ lookup('template', '../templates/ca_csr.j2', convert_data=False) }}' | cfssl gencert -initca - | cfssljson -bare "{{ item }}" -
+  args:
+    chdir: ./secret/ssl
+    creates: "{{ item }}.pem"
+  with_items:
+    - kubernetes/etcd-ca
+    - kubernetes/apiserver-ca
+
+# Create the ca configuration file
+- template:
+    src: ../templates/ca_config.j2
+    dest: ./secret/ssl/ca_config.json

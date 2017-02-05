@@ -1,0 +1,77 @@
+- set_fact:
+    cluster_master_1_ip: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
+    cluster_master_2_ip: "{{ hostvars[groups['masters'][1]]['ansible_host'] }}"
+    cluster_master_3_ip: "{{ hostvars[groups['masters'][2]]['ansible_host'] }}"
+  tags: cmp
+
+- template:
+    src: templates/kubelet.service.j2
+    dest: /etc/systemd/system/kubelet.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart kubelet.service
+  tags: cmp
+
+- file:
+    path: /etc/kubernetes/manifests
+    state: directory
+    mode: 0644
+  tags: cmp
+
+- template:
+    src: templates/kube_etcd.j2
+    dest: /etc/kubernetes/manifests/kube_etcd.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags: cmp
+
+- template:
+    src: templates/kube_config.j2
+    dest: /etc/kubernetes/kube_config.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags: cmp
+
+- template:
+    src: templates/kube_apiserver.j2
+    dest: /etc/kubernetes/manifests/kube_apiserver.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags: cmp
+
+- template:
+    src: templates/kube_controller_manager.j2
+    dest: /etc/kubernetes/manifests/kube_controller_manager.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags: cmp
+
+- template:
+    src: templates/kube_proxy.j2
+    dest: /etc/kubernetes/manifests/kube_proxy.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags: cmp
+
+- template:
+    src: templates/kube_scheduler.j2
+    dest: /etc/kubernetes/manifests/kube_scheduler.yaml
+    owner: root
+    group: root
+    mode: 0644
+  tags: cmp
+
+- command: systemctl daemon-reload
+  tags: cmp
+
+- service:
+    state: started
+    enabled: yes
+    name: kubelet
+  tags: cmp

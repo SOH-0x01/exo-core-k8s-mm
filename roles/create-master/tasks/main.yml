@@ -1,0 +1,2 @@
+---
+  - include: create_master_vm.yml

@@ -1,0 +1,7 @@
+- name: restart kubelet.service
+  service:
+    name: kubelet
+    state: restarted
+
+- name: docker restart haproxy
+  shell: "for id in `docker ps -f ancestor=haproxy:{{ haproxy_version }} --format '{% raw %}{{.ID}}{% endraw %}'`; do docker restart $id; done"

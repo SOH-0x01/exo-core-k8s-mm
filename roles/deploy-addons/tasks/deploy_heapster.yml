@@ -1,0 +1,16 @@
+# Create a tempfile
+- name: Create a tempfile for the manifest creation
+  shell: mktemp
+  register: tempfile
+  tags: addon-hpr
+
+# Heapster
+- name: Create the manifest for the heapster
+  template:
+    src: templates/heapster.j2
+    dest: "{{ tempfile.stdout }}"
+  tags: addon-hpr
+
+- name: Kubectl apply heapster
+  shell: kubectl apply -f "{{ tempfile.stdout }}"
+  tags: addon-hpr

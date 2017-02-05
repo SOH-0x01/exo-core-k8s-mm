@@ -1,0 +1,16 @@
+# Create a tempfile
+- name: Create a tempfile for the manifest creation
+  shell: mktemp
+  register: tempfile
+  tags: addon-ngx
+
+# nginx-ingress
+- name: Create the manifest for nginx ingress
+  template:
+    src: templates/nginx_ingress.j2
+    dest: "{{ tempfile.stdout }}"
+  tags: addon-ngx
+
+- name: Kubectl apply nginx-ingress
+  shell: kubectl apply -f "{{ tempfile.stdout }}"
+  tags: addon-ngx
