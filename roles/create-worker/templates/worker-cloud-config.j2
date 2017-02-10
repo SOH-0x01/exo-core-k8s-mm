@@ -5,10 +5,11 @@ write-files:
     permissions: 0755
     content: |
       #!/bin/bash
-      VERSIONS=${VERSIONS:-"2.7.8.10"}
+      PYTHON_VERSION=${PYTHON_VERSION:-"2.7.13.2713"}
+      GLIBC_VERSION=${GLIBC_VERSION:-"2.3.6-401785"}
       mkdir -p /opt/bin && cd /opt
-      wget http://downloads.activestate.com/ActivePython/releases/${VERSIONS}/ActivePython-${VERSIONS}-linux-x86_64.tar.gz -O - | tar -xz
-      cd ActivePython-${VERSIONS}-linux-x86_64 && ./install.sh -I /opt/python/ && rm -rf ActivePython-${VERSIONS}-linux-x86_64
+      wget http://downloads.activestate.com/ActivePython/releases/${PYTHON_VERSION}/ActivePython-${PYTHON_VERSION}-linux-x86_64-glibc-${GLIBC_VERSION}.tar.gz -O - | tar -xz
+      cd ActivePython-${PYTHON_VERSION}-linux-x86_64-glibc-${GLIBC_VERSION} && ./install.sh -I /opt/python/ && rm -rf ActivePython-${PYTHON_VERSION}-linux-x86_64-glibc-${GLIBC_VERSION}
       ln -s /opt/python/bin/easy_install /opt/bin/easy_install
       ln -s /opt/python/bin/pip /opt/bin/pip
       ln -s /opt/python/bin/python /opt/bin/python
