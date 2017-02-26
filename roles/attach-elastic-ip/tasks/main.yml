@@ -1,0 +1,14 @@
+
+- name: Get the ingress-controller host
+  local_action: shell kubectl get pods --namespace=kube-system -l k8s-app=nginx-ingress-lb -o json | grep nodeName | head -n1 | cut -d \" -f 4
+  become: false
+  run_once: true
+  register: ingress_host
+
+- debug:
+    msg: Attaching the elastic-ip to {{ ingress_host.stdout }}
+
+- name: Add a new ip to the loopback interface
+  shell: "ip addr add {{ elastic_ip }}/24 dev lo"
+  when: "{{ inventory_hostname == ingress_host.stdout }}"
+  tags: eip
