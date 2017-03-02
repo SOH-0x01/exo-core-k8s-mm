@@ -1,5 +1,3 @@
 ---
-  - include: deploy_dns.yml
-  - include: deploy_registry.yml
-  - include: deploy_nginx_ingress.yml
-  - include: deploy_heapster.yml
+  - include: "deploy_{{item}}.yml"
+    with_items: "{{addons}}"

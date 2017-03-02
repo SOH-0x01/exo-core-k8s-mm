@@ -1,0 +1,16 @@
+# Create a tempfile
+- name: Create a tempfile for the manifest creation
+  shell: mktemp
+  register: tempfile
+  tags: addon-lgo
+
+# lego
+- name: Create the manifest for lego
+  template:
+    src: templates/lego.j2
+    dest: "{{ tempfile.stdout }}"
+  tags: addon-lgo
+
+- name: Kubectl apply lego
+  shell: kubectl apply -f "{{ tempfile.stdout }}"
+  tags: addon-lgo

@@ -2,6 +2,8 @@
 - hosts: localhost
   connection: local
   vars:
+    # List of addons to install
+    addons: [dns, registry, nginx_ingress, lego, heapster]
     # DNS - Internal DNS
     k8s_cluster_dns: "10.100.0.10"
     # Registry - Internal Registry
@@ -11,6 +13,9 @@
     reg_bucket_name: "{{ cluster_prefix }}-registry-{{ cluster_name }}-{{ reg_token }}"
     # Nginx/Ingress - Internal Proxy
     ngx_proxy_timeout: 90
+    # lego
+    lego_email: "fgarcin@pictet.com"
+    lego_url: "https://acme-v01.api.letsencrypt.org/directory"
     # Heapster - Cluster monitoring
     # NB: metric are derfined inside the template
   roles:
