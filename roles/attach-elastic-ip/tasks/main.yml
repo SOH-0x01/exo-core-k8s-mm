@@ -9,6 +9,6 @@
     msg: Attaching the elastic-ip to {{ ingress_host.stdout }}
 
 - name: Add a new ip to the loopback interface
-  shell: "ip addr add {{ elastic_ip }}/24 dev lo"
+  shell: "ip addr add {{ elastic_ip }}/24 dev eth0"
   when: "{{ inventory_hostname == ingress_host.stdout }}"
   tags: eip

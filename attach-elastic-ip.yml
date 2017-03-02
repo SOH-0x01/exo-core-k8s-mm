@@ -2,6 +2,6 @@
 - hosts: workers
   become: True
   vars:
-    - elastic_ip: 185.19.31.136
+    - elastic_ip: 185.19.31.133
   roles:
     - attach-elastic-ip
