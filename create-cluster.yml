@@ -16,6 +16,11 @@
     exo_instance_type: Tiny
     # Parameters
     nb_nodes: 3
+  post_tasks:
+    - name: Wait for the ssh to be up
+      become: false
+      local_action: wait_for host="{{ hostvars[item].ansible_host }}" port=22 timeout=90 delay=30
+      with_items: "{{ groups['masters'] }}"
   roles:
     - create-master
 
@@ -29,6 +34,11 @@
     exo_instance_type: Small
     # Parameters
     nb_nodes: "{{ cluster_init_nb_nodes }}"
+  post_tasks:
+    - name: Wait for the ssh to be up
+      become: false
+      local_action: wait_for host="{{ hostvars[item].ansible_host }}" port=22 timeout=90 delay=30
+      with_items: "{{ groups['workers'] }}"
   roles:
     - create-worker
 

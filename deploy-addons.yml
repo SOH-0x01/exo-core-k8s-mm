@@ -14,7 +14,7 @@
     # Nginx/Ingress - Internal Proxy
     ngx_proxy_timeout: 90
     # lego
-    lego_email: "fgarcin@pictet.com"
+    lego_email: "datsci.0x01@gmail.com"
     lego_url: "https://acme-v01.api.letsencrypt.org/directory"
     # Heapster - Cluster monitoring
     # NB: metric are derfined inside the template
